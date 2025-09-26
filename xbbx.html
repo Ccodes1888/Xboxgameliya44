@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Xbox Jump Demo</title>
+  <style>
+    body {
+      margin: 0;
+      background: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    canvas {
+      background: #333;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Ground
+    const groundY = 350;
+
+    // Character
+    const character = {
+      x: 280,
+      y: groundY - 80,
+      width: 50,
+      height: 80,
+      velocityY: 0,
+      jumpPower: -8,
+      gravity: 0.4,
+      onGround: true,
+      image: new Image()
+    };
+
+    character.image.src = "https://raw.githubusercontent.com/Ccodes1888/Xboxgameliya44/refs/heads/main/20250926_133510-removebg-preview.png"; // replace with your PNG
+
+    // Gamepad
+    let gamepad = null;
+
+    window.addEventListener("gamepadconnected", (e) => {
+      gamepad = e.gamepad;
+      console.log("Gamepad connected:", gamepad.id);
+    });
+
+    window.addEventListener("gamepaddisconnected", () => {
+      gamepad = null;
+    });
+
+    function handleInput() {
+      if (!gamepad) return;
+
+      const gp = navigator.getGamepads()[gamepad.index];
+      if (!gp) return;
+
+      const yButton = gp.buttons[3]; // Y = button 3 on Xbox
+
+      if (yButton.pressed) {
+        if (character.onGround) {
+          character.velocityY = character.jumpPower;
+          character.onGround = false;
+        }
+      }
+    }
+
+    function update() {
+      handleInput();
+
+      character.y += character.velocityY;
+      if (!character.onGround) {
+        character.velocityY += character.gravity;
+      }
+
+      // Ground collision
+      if (character.y + character.height >= groundY) {
+        character.y = groundY - character.height;
+        character.velocityY = 0;
+        character.onGround = true;
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw ground
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, groundY, canvas.width, 5);
+
+      // Draw character
+      ctx.drawImage(character.image, character.x, character.y, character.width, character.height);
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
+</body>
+</html>
